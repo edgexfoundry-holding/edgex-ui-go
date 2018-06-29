@@ -28,8 +28,7 @@ $(document).ready(function(){
     	        trigger: 'axis'
     	    },
     	    legend: {
-    	        // data:['KMC.BAC-121036CE01','GS1-AC-Drive01']
-							data:[]
+    	        data:[/*'KMC.BAC-121036CE01','GS1-AC-Drive01'*/]
     	    },
     	    toolbox: {
     	        show : true,
@@ -304,7 +303,7 @@ var coreExportModule = {
 		webSocketMsg:function(){
 			if(coreExportModule.webSocket == null || coreExportModule.webSocket.readyState == "CLOSED"){
 				if ('WebSocket' in window) {
-					coreExportModule.webSocket = new WebSocket("ws://localhost:4000/ws?X-Session-Token=" + window.sessionStorage.getItem("X_Session_Token"));
+					coreExportModule.webSocket = new WebSocket("ws://"+document.location.hostname+":4000/ws?X-Session-Token=" + window.sessionStorage.getItem("X_Session_Token"));
 			    } else {
 			        alert("your browser not support WebSocket.");
 			    }
@@ -330,50 +329,32 @@ var coreExportModule = {
 				 //debugger
 				 if(echartOpts.legend[0].data.indexOf(d.device) == -1){
 					 echartOpts.legend[0].data.push(d.device);
-					 echartOpts.xAxis[0].data.push(d.readings[0].name)
+					 //echartOpts.xAxis[0].data.push(d.readings[0].name)
+					 $.each(d.readings, function(i,r){ 
+					 	if ($.inArray(d.readings[i].name, echartOpts.xAxis[0].data) == -1 ){
+					 		echartOpts.xAxis[0].data.push(d.readings[i].name);
+					 	}
+					 });
+
+
 					 var o = {}
 					 o["name"] = d.device;
 					 o["type"] = "bar";
 					 o["data"] = new Array(echartOpts.xAxis[0].data.length)
-					 o["data"].push(d.readings[0].value)
 					 echartOpts.series.push(o);
-					 coreExportModule.exportChart.setOption(echartOpts);
-				 }if(echartOpts.legend[0].data.indexOf(d.device) != -1 && echartOpts.xAxis[0].data.indexOf(d.readings[0].name) == -1){
-					 echartOpts.xAxis[0].data.push(d.readings[0].name)
-					 $.each(echartOpts.series,function(i,s){
-						 if(s.name == d.device){
-							 s.data.splice(echartOpts.xAxis[0].data.indexOf(d.readings[0].name),1,d.readings[0].value);
-
-							 return false
-						 }
-					 });
 					 coreExportModule.exportChart.setOption(echartOpts);
 				 } else {
 					 $.each(echartOpts.series,function(i,s){
 						 if(s.name == d.device){
-							 s.data.splice(echartOpts.xAxis[0].data.indexOf(d.readings[0].name),1,d.readings[0].value);
-							 coreExportModule.exportChart.setOption(echartOpts);
-							 return false
-						 }
-					 });
+						 	$.each(d.readings, function(j,r){
+							 	s.data.splice(echartOpts.xAxis[0].data.indexOf(d.readings[j].name),1,d.readings[j].value);
+							 	console.log(s.data);
+							 	coreExportModule.exportChart.setOption(echartOpts);
+							});
+						return false
+					 }
+					});
 				 }
-					//alert(d.device)
-				//  if(d.device == "KMC.BAC-121036CE01"){
-				// 	 if(d.readings[0].name == 'AnalogValue_40'){
-				// 		 echartOpts.series[0].data.splice(0,1,d.readings[0].value);
-				// 	 }else if(d.readings[0].name == 'AnalogValue_22'){
-				// 		 echartOpts.series[0].data.splice(1,1,d.readings[0].value);
-				// 	 }
-				// 	 coreExportModule.exportChart.setOption(echartOpts);
-				//  }
-				//  if(d.device == 'GS1-AC-Drive01'){
-				// 	 if(d.readings[0].name == 'HoldingRegister_8455'){
-				// 		 echartOpts.series[1].data.splice(2,1,d.readings[0].value);
-				// 	 }else if(d.readings[0].name == 'HoldingRegister_8454'){
-				// 		 echartOpts.series[1].data.splice(3,1,d.readings[0].value);
-				// 	 }
-				// 	 coreExportModule.exportChart.setOption(echartOpts);
-				//  }
 			}
 		},
 		disconnWebsocket:function(){
