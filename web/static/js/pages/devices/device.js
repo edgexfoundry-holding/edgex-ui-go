@@ -260,6 +260,7 @@ var deviceModuleBtnGroup = {
 					type:'PUT',
 					contentType:'application/json',
 					data:JSON.stringify(paramBody),
+					dataType: "text",
 					success:function(data){
 						$('#device_detail #command_list tbody input[name="reading_value'+command.id+'"]').val("success");
 						$('#'+command.id+'').prop('disabled',false);
